@@ -1,0 +1,14 @@
+{
+  "name": "Scardav extensiones",
+  "extensions": [
+    {
+      "id": "animefenix",
+      "name": "AnimeFenix",
+      "version": 1,
+      "lang": "es",
+      "baseUrl": "https://ww1.animefenix.vip",
+      "url": "https://raw.githubusercontent.com/verdinmatad-ui/scardav-extensions/main/extensions/animefenix.js",
+      "sha256": "d7c57c0b04debded219fbaeddd39f6397db7bcfcb618d0fe27c14fe1d9741ef3"
+    }
+  ]
+}
