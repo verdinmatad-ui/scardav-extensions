@@ -4,11 +4,11 @@
     {
       "id": "animefenix",
       "name": "AnimeFenix",
-      "version": 1,
+      "version": 2,
       "lang": "es",
       "baseUrl": "https://ww1.animefenix.vip",
       "url": "https://raw.githubusercontent.com/verdinmatad-ui/scardav-extensions/main/extensions/animefenix.js",
-      "sha256": "d7c57c0b04debded219fbaeddd39f6397db7bcfcb618d0fe27c14fe1d9741ef3"
+      "sha256": "bb4a84bf2371fdb2ac15fce63c267e7e9fd4d24c2732b7a39c908e9fe230d134"
     }
   ]
 }

@@ -2,8 +2,23 @@ const BASE = "https://ww1.animefenix.vip";
 const abs = (u) => (u ? new URL(u, BASE + "/").href : undefined);
 const hex2a = (hex) => (hex.match(/.{1,2}/g) || []).map((h) => String.fromCharCode(parseInt(h, 16))).join("");
 
+// Texto de un nodo uniendo cada trozo con un espacio ("streamwish" + "Opción 1" -> "streamwish Opción 1").
+// .text() de cheerio los pega sin separador.
+const textOf = (node) => {
+  const parts = [];
+  const walk = (n) => {
+    if (n.type === "script" || n.type === "style") return;
+    if (n.type === "text") {
+      const t = (n.data || "").trim();
+      if (t) parts.push(t);
+    } else (n.children || []).forEach(walk);
+  };
+  walk(node);
+  return parts.join(" ");
+};
+
 module.exports = {
-  manifest: { id: "animefenix", name: "AnimeFenix", version: 1, lang: "es", baseUrl: BASE },
+  manifest: { id: "animefenix", name: "AnimeFenix", version: 2, lang: "es", baseUrl: BASE },
 
   async search(q, ctx) {
     const r = await ctx.http.get(`${BASE}/animes?buscar=${encodeURIComponent(q)}`);
@@ -31,7 +46,8 @@ module.exports = {
     const eps = JSON.parse(m[1]);
     return eps
       .map(([n, cod]) => ({ id: `${sl}-${n}${cod ? `-${cod}` : ""}`, number: Number(n) }))
-      .filter((e) => Number.isFinite(e.number));
+      .filter((e) => Number.isFinite(e.number))
+      .sort((a, b) => a.number - b.number); // el sitio los entrega de mayor a menor
   },
 
   async getVideoSources(epId, ctx) {
@@ -44,7 +60,7 @@ module.exports = {
     const embeds = $("li[encrypt]").map((_, el) => {
       const url = abs(hex2a($(el).attr("encrypt") || ""));
       if (!url || !/^https?:/i.test(url)) return null;
-      return { url, quality: $(el).text().trim() || new URL(url).hostname, type: "embed" };
+      return { url, quality: textOf(el) || new URL(url).hostname, type: "embed" };
     }).get();
     if (!embeds.length) return [];
     const direct = (await Promise.all(embeds.map(async (e) => {
