@@ -1,0 +1,56 @@
+const BASE = "https://ww1.animefenix.vip";
+const abs = (u) => (u ? new URL(u, BASE + "/").href : undefined);
+const hex2a = (hex) => (hex.match(/.{1,2}/g) || []).map((h) => String.fromCharCode(parseInt(h, 16))).join("");
+
+module.exports = {
+  manifest: { id: "animefenix", name: "AnimeFenix", version: 1, lang: "es", baseUrl: BASE },
+
+  async search(q, ctx) {
+    const r = await ctx.http.get(`${BASE}/animes?buscar=${encodeURIComponent(q)}`);
+    const $ = ctx.load(r.text);
+    return $("article.li").map((_, el) => {
+      const href = $(el).find("figure.i a").attr("href") || "";
+      const m = href.match(/^(?:\.\/|\/)?([A-Za-z0-9._-]+)$/);
+      if (!m) return null;
+      const img = $(el).find("figure.i img");
+      return {
+        id: m[1],
+        title: $(el).find("h3.h a").text().trim() || img.attr("alt") || m[1],
+        cover: abs(img.attr("data-src")),
+      };
+    }).get();
+  },
+
+  async getEpisodes(animeId, ctx) {
+    const r = await ctx.http.get(`${BASE}/${animeId}`);
+    const $ = ctx.load(r.text);
+    const sl = $("[data-sl]").attr("data-sl");
+    if (!sl) throw new Error("animefenix: no se encontró data-sl");
+    const m = r.text.match(/var\s+eps\s*=\s*(\[[\s\S]*?\])\s*;/);
+    if (!m) throw new Error("animefenix: no se encontró var eps");
+    const eps = JSON.parse(m[1]);
+    return eps
+      .map(([n, cod]) => ({ id: `${sl}-${n}${cod ? `-${cod}` : ""}`, number: Number(n) }))
+      .filter((e) => Number.isFinite(e.number));
+  },
+
+  async getVideoSources(epId, ctx) {
+    const pageUrl = `${BASE}/ver/${epId}`;
+    const page = await ctx.http.get(pageUrl);
+    const token = ctx.load(page.text)(".opt").attr("data-encrypt");
+    if (!token) throw new Error("animefenix: no se encontró data-encrypt");
+    const r = await ctx.http.post(`${BASE}/fnx`, { acc: "opt", i: token }, { headers: { Referer: pageUrl, Origin: BASE } });
+    const $ = ctx.load(r.text);
+    const embeds = $("li[encrypt]").map((_, el) => {
+      const url = abs(hex2a($(el).attr("encrypt") || ""));
+      if (!url || !/^https?:/i.test(url)) return null;
+      return { url, quality: $(el).text().trim() || new URL(url).hostname, type: "embed" };
+    }).get();
+    if (!embeds.length) return [];
+    const direct = (await Promise.all(embeds.map(async (e) => {
+      try { return (await ctx.extract(e.url)).map((v) => ({ ...v, quality: e.quality })); } catch { return []; }
+    }))).flat();
+    if (direct.length) return direct;
+    return embeds.map((e) => ({ ...e, quality: `${e.quality} (embed)` }));
+  },
+};
