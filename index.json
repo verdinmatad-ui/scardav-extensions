@@ -35,6 +35,26 @@
       "baseUrl": "https://jkanime.net",
       "url": "https://raw.githubusercontent.com/verdinmatad-ui/scardav-extensions/main/extensions/jkanime.js",
       "sha256": "36680be94704de7f69a13ea986bb1d5d71eefd5817deebf74e1422b809416ed8"
+    },
+    {
+      "id": "mangadex",
+      "name": "MangaDex",
+      "version": 1,
+      "lang": "es",
+      "type": "manga",
+      "baseUrl": "https://mangadex.org",
+      "url": "https://raw.githubusercontent.com/verdinmatad-ui/scardav-extensions/main/extensions/mangadex.js",
+      "sha256": "9e636573d2bea0852a35d172a0a362092ffb8108881125fda9a58ac70ab91eaa"
+    },
+    {
+      "id": "olympus",
+      "name": "Olympus",
+      "version": 1,
+      "lang": "es",
+      "type": "manga",
+      "baseUrl": "https://olympusxyz.com",
+      "url": "https://raw.githubusercontent.com/verdinmatad-ui/scardav-extensions/main/extensions/olympus.js",
+      "sha256": "f1f563c59bc734095dd8d903199827ac01168965992a11eb89fb866b20dbef95"
     }
   ]
 }
