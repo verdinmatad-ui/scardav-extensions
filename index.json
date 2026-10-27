@@ -1,6 +1,15 @@
 {
-  "name": "Scardav extensiones",
+  "name": "scardav-extensions",
   "extensions": [
+    {
+      "id": "animeav1",
+      "name": "AnimeAV1",
+      "version": 2,
+      "lang": "es",
+      "baseUrl": "https://animeav1.com",
+      "url": "https://raw.githubusercontent.com/verdinmatad-ui/scardav-extensions/main/extensions/animeav1.js",
+      "sha256": "e105954c32b1bf996a83eaf442ec07ca0ceb4e18a70aac764e1d95b4c133f81a"
+    },
     {
       "id": "animefenix",
       "name": "AnimeFenix",
@@ -9,6 +18,23 @@
       "baseUrl": "https://ww1.animefenix.vip",
       "url": "https://raw.githubusercontent.com/verdinmatad-ui/scardav-extensions/main/extensions/animefenix.js",
       "sha256": "bb4a84bf2371fdb2ac15fce63c267e7e9fd4d24c2732b7a39c908e9fe230d134"
+    },
+    {
+      "id": "demo",
+      "name": "Demo (stream de prueba)",
+      "version": 1,
+      "lang": "es",
+      "url": "https://raw.githubusercontent.com/verdinmatad-ui/scardav-extensions/main/extensions/demo.js",
+      "sha256": "21d764603232ce04cef5463a4aef901f0265387f6220451c30382f5e7baebccf"
+    },
+    {
+      "id": "jkanime",
+      "name": "JkAnime",
+      "version": 1,
+      "lang": "es",
+      "baseUrl": "https://jkanime.net",
+      "url": "https://raw.githubusercontent.com/verdinmatad-ui/scardav-extensions/main/extensions/jkanime.js",
+      "sha256": "36680be94704de7f69a13ea986bb1d5d71eefd5817deebf74e1422b809416ed8"
     }
   ]
 }
