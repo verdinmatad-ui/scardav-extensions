@@ -18,7 +18,7 @@ const textOf = (node) => {
 };
 
 module.exports = {
-  manifest: { id: "animefenix", name: "AnimeFenix", version: 2, lang: "es", baseUrl: BASE },
+  manifest: { id: "animefenix", name: "AnimeFenix", version: 3, lang: "es", baseUrl: BASE },
 
   async search(q, ctx) {
     const r = await ctx.http.get(`${BASE}/animes?buscar=${encodeURIComponent(q)}`);
@@ -62,11 +62,7 @@ module.exports = {
       if (!url || !/^https?:/i.test(url)) return null;
       return { url, quality: textOf(el) || new URL(url).hostname, type: "embed" };
     }).get();
-    if (!embeds.length) return [];
-    const direct = (await Promise.all(embeds.map(async (e) => {
-      try { return (await ctx.extract(e.url)).map((v) => ({ ...v, quality: e.quality })); } catch { return []; }
-    }))).flat();
-    if (direct.length) return direct;
-    return embeds.map((e) => ({ ...e, quality: `${e.quality} (embed)` }));
+    // El core (lib/resolve.ts) resuelve los embeds de uno en uno y en orden de preferencia.
+    return embeds;
   },
 };

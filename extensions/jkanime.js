@@ -3,30 +3,8 @@
 //   - process.env.VIDEO_SERVERS_*  -> constantes de abajo (sube manifest.version al cambiarlas)
 //   - Buffer.from(x, "base64")     -> atob
 //   - globalThis.__jkMeta          -> ctx.cache (cada llamada nace en un worker nuevo)
-//   - extract() / hostRank()       -> ctx.extract() y un orden de preferencia propio (HOST_ORDER)
+//   - extract() / hostRank()       -> el core resuelve los embeds (lib/resolve.ts); aquí solo se devuelven
 const BASE = "https://jkanime.net";
-
-// Cuántos servidores directos se sacan por episodio y cuántos se intentan como máximo
-const WANT_SERVERS = 2;
-const MAX_TRIES = 4;
-
-// Orden de preferencia al sacar el video directo (el primero que encaje gana). Los que no aparecen
-// aquí se intentan después; los de EXCLUDED no tienen extractor y se saltan.
-const HOST_ORDER = [
-  /mp4upload/i,
-  /streamwish|awish|wishfast|vidhide|filelions/i,
-  /voe/i,
-  /streamtape/i,
-  /dood|d0o0d/i,
-  /hgcloud/i,
-  /mixdrop|mdfx|mxcontent/i,
-];
-const EXCLUDED = /filemoon|byse|moonplayer/i;
-const rank = (url) => {
-  if (EXCLUDED.test(url)) return 99;
-  const i = HOST_ORDER.findIndex((re) => re.test(url));
-  return i < 0 ? 50 : i;
-};
 
 // Rutas del sitio que no son animes (para filtrar enlaces en la búsqueda)
 const NOT_ANIME = new Set([
@@ -115,7 +93,7 @@ module.exports = {
   manifest: {
     id: "jkanime",
     name: "JkAnime",
-    version: 1,
+    version: 2,
     apiVersion: 2, // usa ctx.cache
     lang: "es",
     baseUrl: BASE,
@@ -193,22 +171,8 @@ module.exports = {
       out.push({ url: m[2], quality: names[m[1]] || `Servidor ${m[1]}`, type: "embed" });
     }
 
-    // Se prueban de uno en uno, en orden de preferencia, y se para al tener WANT_SERVERS funcionando
-    // o tras MAX_TRIES intentos. Los embeds quedan de respaldo.
-    const ranked = out.filter((e) => rank(e.url) < 99).sort((a, b) => rank(a.url) - rank(b.url));
-    const direct = [];
-    let tries = 0;
-    for (const e of ranked) {
-      if (direct.length >= WANT_SERVERS || tries >= MAX_TRIES) break;
-      tries++;
-      try {
-        const found = await ctx.extract(e.url);
-        for (const v of found || []) direct.push({ ...v, quality: e.quality });
-      } catch { /* sin extractor o archivo borrado: se prueba el siguiente */ }
-    }
-    // Si hay servidores directos, los embeds (con anuncios) solo estorban: último recurso.
-    if (direct.length) return direct;
-    return out.map((e) => ({ ...e, quality: `${e.quality} (embed)` }));
+    // El core (lib/resolve.ts) elige el orden, prueba los hosts y deja los embeds de respaldo.
+    return out;
   },
 
   // Portada > "Programación": últimos episodios publicados (pestañas Animes y Donghuas).

@@ -123,7 +123,7 @@ module.exports = {
   manifest: {
     id: "animeav1",
     name: "AnimeAV1",
-    version: 2,
+    version: 3,
     lang: "es",
     baseUrl: BASE,
     permissions: {
@@ -174,25 +174,12 @@ module.exports = {
     const slug = episodeId.slice(0, i), num = episodeId.slice(i + 1);
     const r = await ctx.http.get(BASE + "/media/" + encodeURIComponent(slug) + "/" + encodeURIComponent(num));
     if (r.status !== 200) throw new Error("AnimeAV1 respondió " + r.status);
-
-    const out = [];
-    let tried = 0;
-    for (const e of parseEmbeds(r.text)) {
-      const label = e.lang + " " + e.server;
-      // Si la app sabe resolver el reproductor a un enlace directo, se usa (máx. 3 intentos por llamada)
-      if (typeof ctx.extract === "function" && tried < 3) {
-        tried++;
-        try {
-          const res = await ctx.extract(e.url);
-          if (Array.isArray(res) && res.length) {
-            for (const v of res) if (v && v.url) out.push({ ...v, quality: label + (v.quality ? " " + v.quality : "") });
-            continue;
-          }
-        } catch { /* se deja como embed */ }
-      }
-      const type = /\.m3u8(\?|$)/i.test(e.url) ? "hls" : /\.mp4(\?|$)/i.test(e.url) ? "mp4" : "embed";
-      out.push({ url: e.url, quality: label, type });
-    }
-    return out;
+    // El core (lib/resolve.ts) convierte los embeds en enlaces directos.
+    return parseEmbeds(r.text).map((e) => ({
+      url: e.url,
+      quality: e.server,
+      lang: e.lang, // "SUB" | "DUB"
+      type: /\.m3u8(\?|$)/i.test(e.url) ? "hls" : /\.mp4(\?|$)/i.test(e.url) ? "mp4" : "embed",
+    }));
   },
 };
